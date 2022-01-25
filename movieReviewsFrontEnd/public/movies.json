@@ -1,0 +1,23 @@
+[
+    {
+        "name" : "Dune", 
+        "date" : "October 22, 2021",
+        "actors" : ["Timothee Chalamet", "Zandaya", "Oscar Isaac"],
+        "poster" : "/images/dune.jpg",
+        "rating" : 4.1
+    },
+    {
+        "name" : "Call Me By Your Name", 
+        "date" : "January 18, 2018",
+        "actors" : ["Timothee Chalamet", "Armie Hammer"],
+        "poster" : "/images/call_me_by_your_name.jpg",
+        "rating" : 4.7
+    },
+    {
+        "name" : "Spiderman: No Way Home", 
+        "date" : "December 17, 2021",
+        "actors" : ["Tom Holland", "Zendaya", "Toby Maguire", "Andrew Garfield"],
+        "poster" : "/images/spiderman.jpg",
+        "rating" : 4.8
+    }
+]
