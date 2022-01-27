@@ -12,7 +12,7 @@ function App() {
   useEffect(() => {
   fetch('/api/movies')
     .then((response) => response.json())
-    .then(json => console.log(json))
+    //.then(json => console.log(json))
     .then(setMovies)
   }, []);
   console.log(movies);
