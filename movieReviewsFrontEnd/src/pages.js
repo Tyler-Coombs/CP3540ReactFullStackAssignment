@@ -1,6 +1,7 @@
 import React from "react";
 import { useState, useRef } from 'react';
-import {Link, useLocation} from "react-router-dom";
+import {Link, useLocation, BrowserRoute as Router, Route, Switch} from "react-router-dom";
+import navbar from "navbar.js";
 
 
 export function Home({movies, setMovies}) {
@@ -112,18 +113,15 @@ export function AddReview({movies, setMovies}) {
 function NavBar() {
     return(
         <>
-        <nav>
-            <ul>
-                <li>
-                    <Link to="/">Home</Link>
-                </li>
-                <li>
-                    <Link to="addreview">Add Review</Link>
-                </li>
-            </ul>
-        </nav>
+        <Router>
+            <navbar />
+            <Switch>
+                <Route path="/" exact component={Home} />
+                <Route path="addreview" exact component={AddReview} />
+            </Switch>
+        </Router>
         </>
-    )
+    );
 }
 
 function Header() {
