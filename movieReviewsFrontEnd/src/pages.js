@@ -1,6 +1,13 @@
 import React from "react";
 import { useState, useRef } from 'react';
 import {Link, useLocation, BrowserRoute as Router, Route, Switch} from "react-router-dom";
+import Container from 'react-bootstrap/Container';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
+import Image from 'react-bootstrap/Image';
+import Button from 'react-bootstrap/Button';
+import {Navbar, Nav } from 'react-bootstrap';
+import Alert from 'react-bootstrap/Alert';
 
 
 
@@ -8,15 +15,28 @@ export function Home({movies, setMovies}) {
     function Movie( {name, date, actors, poster, rating, onRemove = f => f} ) {
         return (
           <>
-            <h2>{name}</h2>
-            <img 
-                src={process.env.PUBLIC_URL + poster} 
-                alt={name + " Movie Poster"}>
-            </img>
-            <h3>Release Date: {date}</h3>
-            <h3>Lead Actors: {(actors).join(", ")}</h3>
-            <h3>Rating: {rating} Stars</h3>
-            <button onClick={() => onRemove(name)}>Remove</button>
+            <Col xs={3}>
+              <Row>
+                <h3 class="p-3 mb-1 bg-dark text-white">{name}</h3>
+              </Row>
+              <Row>
+                <Image rounded="true" src={poster} alt={name + " Movie Poster"}
+                width={900} length={1200}>
+                </Image>
+              </Row>
+              <Row>
+                <h3 class="p-3 mb-1 bg-dark text-white">Release Date: {date}</h3>
+              </Row>
+              <Row>
+                <h3 class="p-3 mb-1 bg-dark text-white">Lead Actors: {(actors).join(", ")}</h3>
+              </Row>
+              <Row>
+                <h3 class="p-3 mb-1 bg-dark text-white">Rating: {rating} Stars</h3>
+              </Row>
+              <Row>
+                <Button onClick={() => onRemove(name)}>Remove</Button>
+              </Row>
+            </Col>
           </>
         );
     }
@@ -35,12 +55,16 @@ export function Home({movies, setMovies}) {
     return (
         <>
             <Header />
-            <MovieList 
-                movies={movies} 
-                onRemoveMovie={ name => {
-                const newMovies = movies.filter(movie => movie.name !== name);
-                setMovies(newMovies);
-            }} />
+            <Container fluid>
+                <Row className="justify-content-center">
+                    <MovieList 
+                        movies={movies} 
+                        onRemoveMovie={ name => {
+                        const newMovies = movies.filter(movie => movie.name !== name);
+                        setMovies(newMovies);
+                    }} />
+                </Row>
+            </Container>
             <Footer year={new Date().getFullYear()}/>
         </>
     );
@@ -100,12 +124,15 @@ export function AddReview({movies, setMovies}) {
         <>
             <h1>Add A Review</h1>
             <div>
-                <li>
-                <Link to="/">Home</Link>
-                </li>
-                <li>
-                <Link to="addreview">Add Review</Link>
-                </li>
+                <Navbar bg="dark" variant="dark">
+                    <Container>
+                        <Navbar.Brand href="/">Navigation</Navbar.Brand>
+                        <Nav className="me-auto">
+                        <Nav.Link href="/">Home</Nav.Link>
+                        <Nav.Link href="addreview">Add Review</Nav.Link>
+                        </Nav>
+                    </Container>
+                </Navbar>
             </div>
             <br></br>
             <AddReviewForm onNewMovie={(name, date, actors, poster, rating) => {
@@ -121,14 +148,17 @@ function Header() {
     return (
     <>
       <header>
-        <h1>Movie Reviews</h1>
+        <h1 class='display-2'>Movie Reviews</h1>
         <div>
-            <li>
-            <Link to="/">Home</Link>
-            </li>
-            <li>
-            <Link to="addreview">Add Review</Link>
-            </li>
+        <Navbar bg="dark" variant="dark">
+            <Container className="justify-content-center">
+            <Navbar.Brand href="/">Navigation</Navbar.Brand>
+            <Nav className="me-auto">
+            <Nav.Link href="/">Home</Nav.Link>
+            <Nav.Link href="addreview">Add Review</Nav.Link>
+            </Nav>
+            </Container>
+        </Navbar>
         </div>
       </header>
     </>
