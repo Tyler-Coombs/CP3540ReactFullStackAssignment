@@ -1,31 +1,36 @@
 import React from "react";
 import { useState, useRef } from 'react';
-import {Link, useLocation, BrowserRoute as Router, Route, Switch} from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Image from 'react-bootstrap/Image';
 import {Navbar, Nav } from 'react-bootstrap';
-import {Form, FormControl, FormGroup, ControlLabel, HelpBlock, Button} from 'react-bootstrap';
+import {Form, Button} from 'react-bootstrap';
 import { Collapse } from "react-bootstrap";
+import { House, PlusLg, Trash, InfoSquare } from "react-bootstrap-icons";
+import RangeSlider from 'react-bootstrap-range-slider';
 
 
 
 export function Home({movies, setMovies}) {
+
     function Movie( {name, date, actors, poster, rating, onRemove = f => f} ) {
         const [open, setOpen] = useState(false);
 
         return (
           <>
-            <Col xs={3}>
+            <Col xs={3} md={4}>
                 
                 
                 <Row>
-                    <h3 >{name}</h3>
+                    <h3 className="">{name}</h3>
                 </Row>
               <Row>
-                <Image rounded="true" src={poster} alt={name + " Movie Poster"}
-                width={900} length={1200}>
+                <Image 
+                className="border" 
+                rounded 
+                src={poster} alt={name + " Movie Poster"}>
                 </Image>
               </Row>
               <Button
@@ -34,7 +39,7 @@ export function Home({movies, setMovies}) {
                     aria-expanded={open}
                     size='lg'
                 >
-                    Movie Info
+                    <InfoSquare /> Movie Info
                 </Button>
                 <Collapse in={open}>
                     <div id="example-collapse-text">
@@ -51,12 +56,12 @@ export function Home({movies, setMovies}) {
               </div>
               </Collapse>
               <Row xs={3} className="justify-content-md-center">
-                <Button variant='danger' onClick={() => onRemove(name)}>Remove</Button>
+                <Button size= 'lg' variant='danger' onClick={ evt => onRemove(name)}><Trash /> Remove</Button>
               </Row>
             </Col>
           </>
         );
-    }
+    };
 
     function MovieList( { movies = [], onRemoveMovie = f => f}) {
         if (!movies.length) return <div>No movies available.</div>;
@@ -67,8 +72,8 @@ export function Home({movies, setMovies}) {
                 ))}
             </>
         );
-    }
-    
+    };
+
     return (
         <>
             <Header />
@@ -80,10 +85,23 @@ export function Home({movies, setMovies}) {
                 <Row className="justify-content-center">
                     <MovieList 
                         movies={movies} 
-                        onRemoveMovie={ name => {
-                        const newMovies = movies.filter(movie => movie.name !== name);
-                        setMovies(newMovies);
-                    }} />
+                        onRemoveMovie={ 
+                            name => {
+                            const removeMovie = async () => {
+                                const movieRemoved = await fetch("/api/removeMovie", 
+                                    {method: "post", 
+                                    body: JSON.stringify({name: name}),
+                                    headers: {"Content-Type": "application/json"}
+                                    });
+                                const body = await movieRemoved.json();
+                                if (body.message !== "Unable to delete movie") {
+                                    const newMovies = movies.filter(movie => movie.name !== name);
+                                    setMovies(newMovies);
+                                }
+                            }
+                            removeMovie();
+                        }
+                    } />
                 </Row>
             </Container>
             </div>
@@ -98,46 +116,62 @@ export function AddReview({movies, setMovies}) {
         const txtDate = useRef();
         const txtActors = useRef();
         let [poster, setPoster] = useState("");
-        const txtRating = useRef();
+        const [rating, setRating] = useState(3);
     
+        const formData = new FormData();
         const submit = e => {
             e.preventDefault();
             const name = txtName.current.value;
             const date = txtDate.current.value;
             const actors = txtActors.current.value;
-            const rating = txtRating.current.value;
+
+            formData.append("name", name);
+            formData.append("date", date);
+            formData.append("actors", actors.split(","))
+            formData.append("poster", poster);
+            formData.append("rating", rating);
     
-            onNewMovie(name, date, actors.split(", "), poster, rating);
+            onNewMovie(formData);
             txtName.current.value = "";
             txtDate.current.value = "";
             txtActors.current.value = [];
             setPoster("");
-            txtRating.current.value = 0;
+            setRating(3);
         }
 
+        
         return (
             <>
             <Container>
                 <Row className="justify-content-center">
                     <Col>
-                        <Form onSubmit={submit}>
+                        <Form onSubmit={submit} type="multipart/form-data">
                             <div>
-                                <label className="form-label">Movie Poster:<input className="form-control" type="file" accept=".png,.jfif,.jpg,.jpeg"
-                                onChange = {e => setPoster(URL.createObjectURL(e.target.files[0]))} required /></label>
+                                <label className="form-label h4">Movie Poster:<input className="form-control" type="file" accept=".png,.jfif,.jpg,.jpeg"
+                                onChange = {e => setPoster("poster", e.target.files[0])} required /></label>
                             </div>
                             <div>
-                                <label className="form-label">Movie Title:<input className="form-control" ref={txtName} type="text" required /></label>
+                                <label className="form-label h4">Movie Title:<input className="form-control" ref={txtName} type="text" required /></label>
                             </div>
                             <div>
-                                <label className="form-label">Release Date:<input className="form-control" ref={txtDate} type="text" required /></label>
+                                <label className="form-label h4">Release Date:<input className="form-control" ref={txtDate} type="text" required /></label>
                             </div>
                             <div>
-                                <label className="form-label">Lead Cast:<input className="form-control" ref={txtActors} type="text" required /></label>
+                                <label className="form-label h4">Lead Cast:<input className="form-control" ref={txtActors} type="text" required /></label>
                             </div>
-                            <div>
-                            <label className="form-label">Rating:<input className="form-control" ref={txtRating} type="text" required/></label>
-                            </div>
-                            <Button variant="primary" type="submit">Submit</Button>
+                            <Form.Group as={Row}>
+                                <Form.Label className="h4">
+                                    Rating
+                                </Form.Label>
+                                <RangeSlider
+                                    min={1}
+                                    max={5}
+                                    step={0.1}
+                                    value={rating}
+                                    onChange={e => setRating(e.target.value)}
+                                />
+                            </Form.Group>
+                            <Button variant="primary" type="submit" className="h4"><PlusLg /> Submit</Button>
                         </Form>
                     </Col>
                 </Row>
@@ -155,8 +189,8 @@ export function AddReview({movies, setMovies}) {
                     <Container>
                         <Navbar.Brand href="/">Navigation</Navbar.Brand>
                         <Nav className="me-auto">
-                        <Nav.Link href="/">Home</Nav.Link>
-                        <Nav.Link href="addreview">Add Review</Nav.Link>
+                        <Nav.Link href="/"><House /> Home</Nav.Link>
+                        <Nav.Link href="addreview"><PlusLg /> Add Review</Nav.Link>
                         </Nav>
                     </Container>
                 </Navbar>
@@ -165,8 +199,18 @@ export function AddReview({movies, setMovies}) {
             
             <div className="bg-secondary text-white">
             <AddReviewForm onNewMovie={(name, date, actors, poster, rating) => {
-                const newMovies= [...movies, {name, date, actors, poster, rating}];
-                setMovies(newMovies)
+                const newMovie = async () => {
+                    const movieAdded = await fetch("/api/addMovie", {
+                        method: "post",
+                        body: JSON.stringify({name, date, actors, poster, rating}),
+                        headers: {"Content-Type": "application/json"},
+                    });
+                    const body = await movieAdded.json();
+                    if (body.message === "Success") {
+                        setMovies(body.movies)
+                    }
+                }
+                newMovie();
             }}
             />
             </div>
@@ -184,8 +228,8 @@ function Header() {
             <Container className="justify-content-center">
             <Navbar.Brand href="/">Navigation</Navbar.Brand>
             <Nav className="me-auto">
-            <Nav.Link href="/">Home</Nav.Link>
-            <Nav.Link href="addreview">Add Review</Nav.Link>
+            <Nav.Link href="/"><House /> Home</Nav.Link>
+            <Nav.Link href="addreview"><PlusLg /> Add Review</Nav.Link>
             </Nav>
             </Container>
         </Navbar>
