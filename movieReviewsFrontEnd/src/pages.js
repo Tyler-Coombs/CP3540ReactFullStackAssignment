@@ -1,6 +1,6 @@
 import React from "react";
 import { useState, useRef } from 'react';
-import { useLocation } from "react-router-dom";
+import { useLocation, Link, BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
@@ -111,6 +111,7 @@ export function Home({movies, setMovies}) {
 }
 
 export function AddReview({movies, setMovies}) {
+    const formData = new FormData();
     function AddReviewForm({onNewMovie = f => f}) {
         const txtName = useRef();
         const txtDate = useRef();
@@ -118,7 +119,7 @@ export function AddReview({movies, setMovies}) {
         let [poster, setPoster] = useState("");
         const [rating, setRating] = useState(3);
     
-        const formData = new FormData();
+        
         const submit = e => {
             e.preventDefault();
             const name = txtName.current.value;
@@ -127,7 +128,7 @@ export function AddReview({movies, setMovies}) {
 
             formData.append("name", name);
             formData.append("date", date);
-            formData.append("actors", actors.split(","))
+            formData.append("actors", [actors.split(",")])
             formData.append("poster", poster);
             formData.append("rating", rating);
     
@@ -137,6 +138,8 @@ export function AddReview({movies, setMovies}) {
             txtActors.current.value = [];
             setPoster("");
             setRating(3);
+
+            console.log(formData.get("name"));
         }
 
         
@@ -145,7 +148,7 @@ export function AddReview({movies, setMovies}) {
             <Container>
                 <Row className="justify-content-center">
                     <Col>
-                        <Form onSubmit={submit} type="multipart/form-data">
+                        <Form onSubmit={submit} encType="multipart/form-data" method="post">
                             <div>
                                 <label className="form-label h4">Movie Poster:<input className="form-control" type="file" accept=".png,.jfif,.jpg,.jpeg"
                                 onChange = {e => setPoster("poster", e.target.files[0])} required /></label>
@@ -183,14 +186,15 @@ export function AddReview({movies, setMovies}) {
     return (
         <>
         <header className="bg-dark text-white">
-            <h1 className='display-3'>Add A Review</h1>
+        <Image src="/images/movie-reviews-logo.png"></Image>
+            <h1 className='display-3'>Add Your Review</h1>
             <div>
                 <Navbar bg="dark" variant="dark">
                     <Container>
                         <Navbar.Brand href="/">Navigation</Navbar.Brand>
                         <Nav className="me-auto">
                         <Nav.Link href="/"><House /> Home</Nav.Link>
-                        <Nav.Link href="addreview"><PlusLg /> Add Review</Nav.Link>
+                        <Nav.Link href="/addreview"><PlusLg /> Add Review</Nav.Link>
                         </Nav>
                     </Container>
                 </Navbar>
@@ -198,12 +202,11 @@ export function AddReview({movies, setMovies}) {
             </header>
             
             <div className="bg-secondary text-white">
-            <AddReviewForm onNewMovie={(name, date, actors, poster, rating) => {
+            <AddReviewForm onNewMovie={(formData) => {
                 const newMovie = async () => {
                     const movieAdded = await fetch("/api/addMovie", {
                         method: "post",
-                        body: JSON.stringify({name, date, actors, poster, rating}),
-                        headers: {"Content-Type": "application/json"},
+                        body: formData
                     });
                     const body = await movieAdded.json();
                     if (body.message === "Success") {
@@ -222,14 +225,14 @@ function Header() {
     return (
     <>
       <header className="bg-dark text-white">
-        <h1 className='display-3'>Movie Reviews</h1>
+        <Image src="/images/movie-reviews-logo.png"></Image>
         <div>
         <Navbar bg="dark" variant="dark">
             <Container className="justify-content-center">
             <Navbar.Brand href="/">Navigation</Navbar.Brand>
             <Nav className="me-auto">
             <Nav.Link href="/"><House /> Home</Nav.Link>
-            <Nav.Link href="addreview"><PlusLg /> Add Review</Nav.Link>
+            <Nav.Link href="/addreview"><PlusLg /> Add Review</Nav.Link>
             </Nav>
             </Container>
         </Navbar>
