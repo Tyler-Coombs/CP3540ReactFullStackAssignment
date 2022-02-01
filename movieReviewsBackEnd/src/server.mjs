@@ -5,14 +5,42 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { MongoClient } from 'mongodb';
+import multer from 'multer';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+const upload = multer({ filename: (req, file) => {file.originalname;}, dest: "./src/build/images/"});
+
+
+const uploadFiles = async (req, res) => {
+    try {
+        const client = await MongoClient.connect('mongodb://localhost:27017', {useNewUrlParser: true});
+        const db = client.db('my-movies');
+
+        const posterName = await 
+        await db.collection('movies').insertOne( {
+            name:req.body.name, 
+            date:req.body.date, 
+            actors:req.body.actors.split(", "), 
+            poster:"/images/" + req.file.filename, 
+            rating:req.body.rating
+        })
+        
+        const movieInfo = await db.collection('movies').find({}).toArray();
+        res.status(200).json({message: "Success", movies: movieInfo});
+        client.close();
+    } catch (error) {
+        res.status(500).json( { message: "Error connecting to db", error});
+    }
+}
+
+
 const app = express();
 app.use(express.static(path.join(__dirname, 'build')));
+
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get('/api/movies', async (req, res) => {
 
@@ -29,6 +57,8 @@ app.get('/api/movies', async (req, res) => {
         res.status(500).json( { message: "Error connecting to db", error});
     }
 });
+
+app.post('/api/addMovie', upload.single("poster"), uploadFiles);
 
 app.post('/api/removeMovie', async (req, res) => {
     try {
@@ -53,23 +83,6 @@ app.post('/api/removeMovie', async (req, res) => {
     }
 });
 
-app.post('/api/addMovie', async (req, res) => {
-    try {
-        const client = await MongoClient.connect('mongodb://localhost:27017', {useNewUrlParser: true});
-        const db = client.db('my-movies');
-
-        await db.collection('movies').insertOne( {name:req.body.name, date:req.body.date, actors:req.body.actors,poster:req.body.poster, rating:req.body.rating})
-
-        //const movieInfo = await db.collection('movies').find({name:req.params.name}).toArray();
-        
-        res.status(200).json({message: "Success"});
-        client.close();
-    }
-    catch( error) {
-        res.status(500).json( { message: "Error connecting to db", error});
-    }
-});
-
 app.get('/api/oneMovie/:name', async (req, res) => {
     console.log(req.params.name);
     try {
@@ -85,5 +98,7 @@ app.get('/api/oneMovie/:name', async (req, res) => {
         res.status(500).json( { message: "Error connecting to db", error});
     }
 });
+
+app.get('*', (req, res) => { res.sendFile(path.join(__dirname + '/build/index.html'))});
 
 app.listen(8000, () => console.log("Listening on port 8000"));
